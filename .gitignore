@@ -1,0 +1,32 @@
+# Build trees
+/build/
+/cmake-build-*/
+/out/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/CTestTestfile.cmake
+/Testing/
+/compile_commands.json
+
+# Objects and binaries
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.exe
+*.dSYM/
+
+# Local index, corpora, and machine-specific config
+/data/
+/index/
+*.index
+recall.toml
+
+# Editors and OS
+.DS_Store
+.cache/
+.idea/
+.vscode/
+*.swp
