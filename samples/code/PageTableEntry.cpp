@@ -1,0 +1,3 @@
+struct PageTableEntry {
+  int frameNumber;
+};

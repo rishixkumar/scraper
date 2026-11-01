@@ -12,12 +12,12 @@ Repository: [github.com/rishixkumar/scraper](https://github.com/rishixkumar/scra
 
 ## Status
 
-Checkpoint 0 is the repository itself: this plan, a C++/CMake ignore list, and a `main` branch. No indexer code yet.
+Phase 1 is implemented. `recall dump <directory>` prints tokens from text, source, PDF, PPTX, and DOCX. Scanned PDFs are skipped. There is no index yet.
 
 | Phase | Goal | Done when |
 | --- | --- | --- |
-| 0 | Repository, plan, layout | This README is on `main` |
-| 1 | Crawler, text extractors, tokenizer | Tokens dump from a folder of mixed files |
+| 0 | Repository, plan, layout | On `main` |
+| 1 | Crawler, text extractors, tokenizer | Done. `recall dump samples` covers notes, code, PDF, PPTX, and DOCX |
 | 2 | In-memory inverted index, BM25, CLI query | Search works, with no persistence yet |
 | 3 | On-disk segments, mmap, compression, crash safety | Survives restart and `kill -9` |
 | 4 | Live updates and startup reconciliation | An edit is searchable within about 1 second |
@@ -25,6 +25,33 @@ Checkpoint 0 is the repository itself: this plan, a C++/CMake ignore list, and a
 | 6 | Typo tolerance, phrases, snippets, benchmarks | It feels like a product, with measured numbers |
 
 Phases 1–4 are the resume project. Phases 5–6 are the polish. Part-time, expect about 6–10 weeks if the later phases go deep.
+
+## Build and run
+
+Install the extractor libraries (Apple Silicon Homebrew):
+
+```bash
+brew install cmake pkg-config poppler libzip pugixml
+```
+
+CMake downloads GoogleTest. Then:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+./build/recall dump samples
+ctest --test-dir build --output-on-failure
+```
+
+`samples/` contains notes, a C++ file, a text PDF, a blank PDF, a PPTX, and a DOCX. The blank PDF prints `! skipped: no text layer`. `.git`, `node_modules`, symlinks, files over 32 MB, and secret names such as `.env`, `id_rsa`, and `cookies.txt` are left out of the walk.
+
+On macOS 15.3, Homebrew FreeType 2.15 is linked against `/usr/lib/libhvf.dylib`, which this OS does not provide. Loading Poppler aborts until FreeType points at a local stub:
+
+```bash
+./scripts/macos-freetype-hvf.sh
+```
+
+Run that again after `brew upgrade freetype`. The stub reports failure, so normal PDF text still extracts. HVF variable-font rendering does not.
 
 ## What it is
 
@@ -160,7 +187,7 @@ The folder on disk today is `job scraper`. The binary and the library are `recal
 
 C++20, CMake, GoogleTest, libpoppler-cpp, libzip, pugixml. Linux adds a systemd user unit. Sanitizers: ASan, UBSan, and ThreadSanitizer on the concurrency tests. Fuzz the varint decoder and the tokenizer.
 
-Dependencies stay out of the first commit. Phase 1 adds the ones the extractors need, found with `pkg-config` where the platform provides them.
+The extractors find poppler-cpp, libzip, and pugixml with `pkg-config`. GoogleTest is fetched by CMake.
 
 ## Benchmarks
 
@@ -203,4 +230,4 @@ Resume shape, brackets left empty on purpose:
 
 ## How this repo will grow
 
-Each phase ends with a README update (status table, how to build, how to run what exists) and a push to `main` on `rishixkumar/scraper`. Phase 1 is next: a crawler, extractors, and tokenizer that can print tokens for a mixed folder, with tests, still with no index.
+Each phase ends with a README update and a push to `main` on `rishixkumar/scraper`. Phase 2 is next: an in-memory inverted index, BM25, and a query command. Nothing is written to disk yet.
